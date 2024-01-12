@@ -2,6 +2,14 @@ import axios from "axios";
 
 export interface IVehicle {
     id: string
+    connectors: {
+        standard: string,
+        power: number,
+        max_electric_power: number,
+        time: number,
+        speed: number,
+        __typename: string
+    }[]
     naming: {
         make: string,
         model: string,

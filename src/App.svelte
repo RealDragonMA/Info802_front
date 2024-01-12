@@ -1,66 +1,68 @@
 <script lang="ts">
 
-    import {onMount} from "svelte";
-    import Service, {type IVehicle} from "./services/Service";
+    import Map from "./components/Map.svelte";
+    import Sidebar from "./components/Sidebar.svelte";
+    import axios from "axios";
 
+    let queryStart: string;
+    let queryEnd: string;
+    let map: any;
+    let citiesStart: string[] = []
+    let citiesEnd: string[] = []
+    const api_key : string = "5b3ce3597851110001cf6248c033c235cd58408988708d1c480a3049";
 
-    let vehicles: IVehicle[] = [];
-    let copy: IVehicle[] = [];
-    let searchInput: string = "";
-
-    let vehicleSelected: IVehicle | null = null;
-
-    function search(): void {
-        vehicles = copy.filter(vehicle => vehicle.naming.make.toLowerCase().includes(searchInput.toLowerCase()) || vehicle.naming.chargetrip_version.toLowerCase().includes(searchInput.toLowerCase()))
+    async function searchStart(){
+        const apiUrl = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${api_key}&text=${queryStart}&boundary.country=FR;`
+        citiesStart = (await axios.get(apiUrl)).data.features
     }
 
-    onMount(async () => {
-        vehicles = [
-            ...await Service.getVehicles({size: 100, search: ''}),
-            ...await Service.getVehicles({size: 100, search: '', page: 2}),
-            ...await Service.getVehicles({size: 100, search: '', page: 3}),
-            ...await Service.getVehicles({size: 100, search: '', page: 4}),
-            ...await Service.getVehicles({size: 100, search: '', page: 5}),
-        ]
-        copy = vehicles
+    async function searchEnd(){
+        const apiUrl = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${api_key}&text=${queryEnd}&boundary.country=FR;`
+        citiesEnd = (await axios.get(apiUrl)).data.features
+    }
 
-        const makesToKeep = ['BMW', 'Citroen', 'Chevrolet', 'CUPRA', 'Dacia', 'Fiat', 'Ford', 'Honda', 'Mercedes']
+    function selectStartCity(city: any){
+        queryStart = city.properties.name
+        const coordinates = city.geometry.coordinates
+        map.flyTo(coordinates)
+    }
 
-        vehicles = vehicles.filter(vehicle => makesToKeep.includes(vehicle.naming.make))
-        let makes = Array.from(new Set(vehicles.map(vehicle => vehicle.naming.make)).values())
-        console.log(makes)
-    })
-
+    function selectEndCity(city: any){
+        queryEnd = city.properties.name
+        const coordinates = city.geometry.coordinates
+        map.flyTo(coordinates)
+    }
 
 </script>
 
 
-<main class="w-screen h-screen bg-[url('bg.png')]">
-    
-    <div class="p-8 h-full">
-        <div class="space-y-8 p-4 pt-6 w-3/12 h-full rounded-xl bg-gray-100 shadow-2xl overflow-auto">
-            {#if vehicleSelected == null}
-                <input bind:value={searchInput} on:input={search} type="text" placeholder="Rechercher un véhicule" class="input shadow w-full sticky top-0"/>
-                <div class="w-full border"></div>
-                <div class="flex flex-col">
-                    {#each vehicles as vehicle}
-                        <div on:click={() => vehicleSelected = vehicle}
-                             class="flex flex-row space-x-4 items-center hover:scale-[1.01] transition cursor-pointer hover:bg-gray-200 p-2 rounded-lg">
-                            <img class="w-32 bg-blue-100 rounded-xl" src="{vehicle.media.image.thumbnail_url}"
-                                 alt="{vehicle.naming.make}"/>
-                            <div class="flex flex-col">
-                                <p class="text-sm font-semibold">{vehicle.naming.chargetrip_version}</p>
-                                <p class="text-xs">{vehicle.naming.make}</p>
-                            </div>
-                        </div>
+<main class="flex flex-row w-screen h-screen relative z-10">
+    <Map bind:this={map}/>
+    <Sidebar/>
+    <div class="flex flex-row w-8/12 space-x-4 p-3 h-min">
+        <div class="{citiesStart.length === 0 ? '' : 'dropdown'} w-full">
+            <input bind:value={queryStart} on:input={searchStart} class="input shadow w-full" placeholder="Entrer une ville de départ"/>
+            {#if citiesStart.length !== 0}
+                <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full max-h-80 flex-nowrap overflow-auto">
+                    {#each citiesStart as city}
+                        <button on:click={() => selectStartCity(city)}>
+                            <li class="hover:bg-gray-100 rounded-lg transition"><a>{city.properties.name}</a></li>
+                        </button>
                     {/each}
-                </div>
-            {:else}
-                <div transition:hori>
-                    <p>ok</p>
-                </div>
+                </ul>
+            {/if}
+        </div>
+        <div class="{citiesEnd.length === 0 ? '' : 'dropdown'} w-full">
+            <input bind:value={queryEnd} on:input={searchEnd} class="input shadow w-full" placeholder="Entrer une ville de départ"/>
+            {#if citiesEnd.length !== 0}
+                <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full max-h-80 flex-nowrap overflow-auto">
+                    {#each citiesEnd as city}
+                        <button on:click={() => selectEndCity(city)}>
+                            <li class="hover:bg-gray-100 rounded-lg transition"><a>{city.properties.name}</a></li>
+                        </button>
+                    {/each}
+                </ul>
             {/if}
         </div>
     </div>
-
 </main>
