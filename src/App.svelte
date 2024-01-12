@@ -4,11 +4,16 @@
     import Sidebar from "./components/Sidebar.svelte";
     import axios from "axios";
 
+    let map: any;
+
     let queryStart: string;
     let queryEnd: string;
-    let map: any;
+
+    let cityStart: any;
+    let cityEnd: any;
     let citiesStart: string[] = []
     let citiesEnd: string[] = []
+
     const api_key : string = "5b3ce3597851110001cf6248c033c235cd58408988708d1c480a3049";
 
     async function searchStart(){
@@ -22,22 +27,20 @@
     }
 
     function selectStartCity(city: any){
+        cityStart = city;
         queryStart = city.properties.name
-        const coordinates = city.geometry.coordinates
-        map.flyTo(coordinates)
     }
 
     function selectEndCity(city: any){
+        cityEnd = city;
         queryEnd = city.properties.name
-        const coordinates = city.geometry.coordinates
-        map.flyTo(coordinates)
     }
 
 </script>
 
 
 <main class="flex flex-row w-screen h-screen relative z-10">
-    <Map bind:this={map}/>
+    <Map bind:this={map} {cityStart} {cityEnd}/>
     <Sidebar/>
     <div class="flex flex-row w-8/12 space-x-4 p-3 h-min">
         <div class="{citiesStart.length === 0 ? '' : 'dropdown'} w-full">
