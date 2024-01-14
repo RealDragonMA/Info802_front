@@ -1,13 +1,15 @@
 <script lang="ts">
-    import {onMount, onDestroy} from 'svelte'
-    import {Map, MapStyle, config, Marker} from '@maptiler/sdk';
+    import {onDestroy, onMount} from 'svelte'
+    import {config, Map, MapStyle, Marker} from '@maptiler/sdk';
     import "@maptiler/sdk/dist/maptiler-sdk.css";
-    import axios from "axios";
     import {features, geoJSON, geoLayer} from "../resources/GeoJSON";
+    import Service from "../services/Service";
+    import MapUtils from "../utils/MapUtils";
 
     export let cityStart: any;
     export let cityEnd: any;
 
+    let mapUtils: MapUtils;
     let map: any;
     let mapContainer: any;
 
@@ -28,33 +30,37 @@
         drawRoad();
     }
 
-    export async function drawRoad() {
+    async function drawRoad() {
         if(cityStart === undefined || cityEnd === undefined) return;
+
         const start = cityStart.geometry.coordinates;
         const end = cityEnd.geometry.coordinates;
-        const response = (await axios.get(`https://api.openrouteservice.org/v2/directions/driving-car`, {
-            params: {
-                api_key: '5b3ce3597851110001cf6248c033c235cd58408988708d1c480a3049',
-                start: `${start[0]},${start[1]}`,
-                end: `${end[0]},${end[1]}`
-            }
-        })).data.features.flatMap((feature: any) => feature.geometry.coordinates)
+
+        const response = await Service.getRoad({start, end});
+
         if(map.getSource('line')){
-            map.getSource('line').setData(features(response));
-        }else{
-            map.addSource('line', geoJSON(response));
+            map.getSource('line').setData(features(response.road));
+        } else {
+            map.addSource('line', geoJSON(response.road));
             map.addLayer(geoLayer);
         }
+
+        console.log("La distance entre les deux villes est de " + response.distance + " km")
+
+        const electricStations = await Service.getElectricStations({road: response.road});
+        console.log(electricStations);
+        electricStations.forEach(([lat, lng]: [number, number]) => {
+            new Marker({
+                color: '#73af13',
+            })
+            .setLngLat([lng, lat])
+            .addTo(map);
+        });
     }
 
     onMount(() => {
-        const initialState = {lat: 45.64800435857976, lng: 5.863382871781049, zoom: 14};
-        map = new Map({
-            container: mapContainer,
-            style: MapStyle.STREETS,
-            center: [initialState.lng, initialState.lat],
-            zoom: initialState.zoom
-        });
+        mapUtils = new MapUtils("5mNoMIGOh5QaLuGhP3Ti");
+        map = mapUtils.create(mapContainer)
     });
 
     onDestroy(() => map.remove());

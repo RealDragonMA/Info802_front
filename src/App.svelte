@@ -4,8 +4,6 @@
     import Sidebar from "./components/Sidebar.svelte";
     import axios from "axios";
 
-    let map: any;
-
     let queryStart: string;
     let queryEnd: string;
 
@@ -29,18 +27,19 @@
     function selectStartCity(city: any){
         cityStart = city;
         queryStart = city.properties.name
+        console.log(cityStart);
     }
 
     function selectEndCity(city: any){
         cityEnd = city;
         queryEnd = city.properties.name
+        console.log(cityEnd);
     }
-
 </script>
 
 
 <main class="flex flex-row w-screen h-screen relative z-10">
-    <Map bind:this={map} {cityStart} {cityEnd}/>
+    <Map {cityStart} {cityEnd}/>
     <Sidebar/>
     <div class="flex flex-row w-8/12 space-x-4 p-3 h-min">
         <div class="{citiesStart.length === 0 ? '' : 'dropdown'} w-full">
