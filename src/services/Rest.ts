@@ -26,7 +26,7 @@ export interface IVehicle {
     __typename: string
 }
 
-export class Service {
+export class Rest {
 
     public async getVehicles(options: { page?: number, size?: number, search?: string, filter?: any }): Promise<IVehicle[]> {
         return (await axios.get('http://localhost:80/vehicle', {
@@ -55,4 +55,4 @@ export class Service {
 
 }
 
-export default new Service();
+export default new Rest();

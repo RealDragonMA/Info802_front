@@ -1,13 +1,14 @@
 <script lang="ts">
     import {onDestroy, onMount} from 'svelte'
-    import {config, Map, MapStyle, Marker} from '@maptiler/sdk';
+    import {Marker} from '@maptiler/sdk';
     import "@maptiler/sdk/dist/maptiler-sdk.css";
-    import {features, geoJSON, geoLayer} from "../resources/GeoJSON";
-    import Service from "../services/Service";
+    import {features, geoJSON, geoLayer} from "../utils/GeoJSON";
+    import Rest from "../services/Rest";
     import MapUtils from "../utils/MapUtils";
-
-    export let cityStart: any;
-    export let cityEnd: any;
+    import cityStart from "../stores/cityStart";
+    import cityEnd from "../stores/cityEnd";
+    import {setElectricStations} from "../stores/electric_stations";
+    import {setRoad} from "../stores/road";
 
     let mapUtils: MapUtils;
     let map: any;
@@ -16,57 +17,61 @@
     let cityStartMarker: any;
     let cityEndMarker: any;
 
-    config.apiKey = '5mNoMIGOh5QaLuGhP3Ti';
-
     export function flyTo(coords: [number, number], type: "start" | "end" = "start") {
         map.flyTo({center: coords, essential: true, speed: 2.5});
-        if(type === "start"){
-            if(cityStartMarker) cityStartMarker.remove();
+        if (type === "start") {
+            if (cityStartMarker) cityStartMarker.remove();
             cityStartMarker = new Marker().setLngLat(coords).addTo(map);
-        }else{
-            if(cityEndMarker) cityEndMarker.remove();
+        } else {
+            if (cityEndMarker) cityEndMarker.remove();
             cityEndMarker = new Marker().setLngLat(coords).addTo(map);
         }
         drawRoad();
     }
 
     async function drawRoad() {
-        if(cityStart === undefined || cityEnd === undefined) return;
+        if ($cityStart === undefined || $cityEnd === undefined) return;
 
-        const start = cityStart.geometry.coordinates;
-        const end = cityEnd.geometry.coordinates;
+        const start = $cityStart.geometry.coordinates;
+        const end = $cityEnd.geometry.coordinates;
 
-        const response = await Service.getRoad({start, end});
+        const road = await Rest.getRoad({start, end});
+        setRoad(road)
 
-        if(map.getSource('line')){
-            map.getSource('line').setData(features(response.road));
+        if (map.getSource('line')) {
+            map.getSource('line').setData(features(road.road));
         } else {
-            map.addSource('line', geoJSON(response.road));
+            map.addSource('line', geoJSON(road.road));
             map.addLayer(geoLayer);
         }
 
-        console.log("La distance entre les deux villes est de " + response.distance + " km")
+        console.log("La distance entre les deux villes est de " + road.distance + " km")
 
-        const electricStations = await Service.getElectricStations({road: response.road});
-        console.log(electricStations);
+        const electricStations = await Rest.getElectricStations({road: road.road});
+        setElectricStations(electricStations)
+
         electricStations.forEach(([lat, lng]: [number, number]) => {
             new Marker({
                 color: '#73af13',
             })
-            .setLngLat([lng, lat])
-            .addTo(map);
+                .setLngLat([lng, lat])
+                .addTo(map);
         });
     }
 
     onMount(() => {
         mapUtils = new MapUtils("5mNoMIGOh5QaLuGhP3Ti");
         map = mapUtils.create(mapContainer)
+        cityStart.subscribe((city) => {
+            if (city) flyTo(city.geometry.coordinates, "start");
+        });
+        cityEnd.subscribe((city) => {
+            if (city) flyTo(city.geometry.coordinates, "end");
+        });
     });
 
     onDestroy(() => map.remove());
 
-    $: cityStart && flyTo(cityStart.geometry.coordinates, "start");
-    $: cityEnd && flyTo(cityEnd.geometry.coordinates, "end");
 
 </script>
 
