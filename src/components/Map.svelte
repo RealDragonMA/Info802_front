@@ -9,10 +9,11 @@
     import cityEnd from "../stores/cityEnd";
     import {setElectricStations} from "../stores/electric_stations";
     import {setRoad} from "../stores/road";
+    import selectedStations from "../stores/selectedStations";
 
     let mapUtils: MapUtils;
-    let map: any;
-    let mapContainer: any;
+    export let map: any;
+    export let mapContainer: any;
 
     let cityStartMarker: any;
     let cityEndMarker: any;
@@ -45,8 +46,6 @@
             map.addLayer(geoLayer);
         }
 
-        console.log("La distance entre les deux villes est de " + road.distance + " km")
-
         const electricStations = await Rest.getElectricStations({road: road.road});
         setElectricStations(electricStations)
 
@@ -68,6 +67,16 @@
         cityEnd.subscribe((city) => {
             if (city) flyTo(city.geometry.coordinates, "end");
         });
+        selectedStations.subscribe(stations => {
+            stations?.forEach(([lat, lng]: [number, number]) => {
+                new Marker({
+                    color: '#cb7512',
+                })
+                    .setLngLat([lng, lat])
+                    .addTo(map);
+            });
+
+        })
     });
 
     onDestroy(() => map.remove());

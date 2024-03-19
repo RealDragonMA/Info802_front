@@ -1,10 +1,11 @@
 import axios from "axios";
+import roadDetails from "../stores/roadDetails";
 
 export class Soap {
 
     public async road(electric_stations: any, road: any, vehicle: any): Promise<any> {
         const soapEnvelope = `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:exa="spyne.examples.hello.soap">
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:exa="soap-volte.mathis-mazoyer.fr">
       <soapenv:Header/>
       <soapenv:Body>
         <exa:road>
@@ -16,7 +17,7 @@ export class Soap {
     </soapenv:Envelope>
   `;
         try {
-            const response = await axios.post('http://127.0.0.1:8001', soapEnvelope, {
+            const response = await axios.post('https://soap-volte.mathis-mazoyer.fr', soapEnvelope, {
                 headers: {'Content-Type': 'text/xml'}
             });
 
@@ -27,7 +28,7 @@ export class Soap {
             if (matches && matches[1]) {
                 // Convertir la chaîne JSON en objet
                 const jsonObject = JSON.parse(matches[1]);
-                console.log(jsonObject); // Traitez l'objet JSON ici
+                roadDetails.set(jsonObject);
             } else {
                 console.log("Aucun JSON trouvé dans la réponse SOAP");
             }

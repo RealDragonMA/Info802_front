@@ -28,14 +28,16 @@ export interface IVehicle {
 
 export class Rest {
 
+    private url: string = 'https://rapi-volte.mathis-mazoyer.fr';
+
     public async getVehicles(options: { page?: number, size?: number, search?: string, filter?: any }): Promise<IVehicle[]> {
-        return (await axios.get('http://localhost:80/vehicle', {
+        return (await axios.get(`${this.url}/vehicle`, {
             params: options
         })).data;
     }
 
     public async getRoad(options: { start: [number, number], end: [number, number] }): Promise<{road: [number, number][], distance: number, time: number}> {
-        return (await axios.get('http://localhost:80/map/road', {
+        return (await axios.get(`${this.url}/map/road`, {
             params: {
                 start: options.start.join(','),
                 end: options.end.join(',')
@@ -44,13 +46,13 @@ export class Rest {
     }
 
     public async getElectricStations(options: { road: [number, number][] }): Promise<any> {
-        return (await axios.post('http://localhost:80/map/electric-stations', {
+        return (await axios.post(`${this.url}/map/electric-stations`, {
             road: options.road
         })).data;
     }
 
     public async getVehicleInformation(options: { id: string }): Promise<any> {
-        return (await axios.get('http://localhost:80/vehicle/' + options.id)).data.vehicle;
+        return (await axios.get(`${this.url}/vehicle/` + options.id)).data.vehicle;
     }
 
 }

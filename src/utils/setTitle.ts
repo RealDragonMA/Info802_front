@@ -1,1 +1,1 @@
-export const setTitle = (title: string) => document.title = title + ' - GeSymme';
+export const setTitle = (title: string) => document.title = title;

@@ -15,12 +15,12 @@
     }
 
     onMount(async () => {
-        // vehicles = [
-        //     ...await Rest.getVehicles({size: 100}),
-        // ]
-        // const makesToKeep = ['BMW', 'Citroen', 'Chevrolet', 'CUPRA', 'Dacia', 'Fiat', 'Ford', 'Honda', 'Mercedes']
-        // vehicles = vehicles.filter(vehicle => makesToKeep.includes(vehicle.naming.make))
-        vehicles = data
+        vehicles = [
+            ...await Rest.getVehicles({size: 100}),
+        ]
+        const makesToKeep = ['BMW', 'Citroen', 'Chevrolet', 'CUPRA', 'Dacia', 'Fiat', 'Ford', 'Honda', 'Mercedes']
+        vehicles = vehicles.filter(vehicle => makesToKeep.includes(vehicle.naming.make))
+        // vehicles = data
         copy = vehicles
     })
 
