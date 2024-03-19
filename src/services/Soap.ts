@@ -21,12 +21,10 @@ export class Soap {
                 headers: {'Content-Type': 'text/xml'}
             });
 
-            // Utiliser une expression régulière pour extraire le JSON de la réponse SOAP
             const regex = /<tns:string>(.*?)<\/tns:string>/;
             const matches = regex.exec(response.data);
 
             if (matches && matches[1]) {
-                // Convertir la chaîne JSON en objet
                 const jsonObject = JSON.parse(matches[1]);
                 roadDetails.set(jsonObject);
             } else {
