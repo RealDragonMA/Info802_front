@@ -68,6 +68,8 @@
         return Math.sqrt(latDistance ** 2 + lonDistance ** 2);
     }
 
+    localStorage.clear()
+
     onMount(() => {
         localStorage.clear()
         setTitle("VolteDrive - Accueil")

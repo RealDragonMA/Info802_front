@@ -3,21 +3,8 @@
     import roadDetails from "../stores/roadDetails";
     import road from "../stores/road";
     import cityStart from "../stores/cityStart";
-    import {onMount} from "svelte";
     import cityEnd from "../stores/cityEnd";
     import Icon from "@iconify/svelte";
-
-    function setDetails(): void {
-
-    }
-
-    $: roadDetails.subscribe((value) => {
-        console.log(value);
-    });
-
-    onMount(() => {
-        console.log($cityStart);
-    })
 
 </script>
 
@@ -36,5 +23,6 @@
         </div>
         <p>{$cityEnd?.properties?.name}</p>
     </div>
-    <p class="truncate">Temps de trajet total: {$roadDetails.total_hours}h{$roadDetails.total_minutes}m, Nombre de recharge: {$roadDetails.nb_charge}, Temps total de charge: {$roadDetails.total_time_charging}</p>
+    <p class="truncate">Temps de trajet total: {$roadDetails.total_hours}h{$roadDetails.total_minutes}m, Nombre de
+        recharge: {$roadDetails.nb_charge}, Temps total de charge: {$roadDetails.total_time_charging}min</p>
 </div>

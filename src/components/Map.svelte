@@ -18,6 +18,11 @@
     let cityStartMarker: any;
     let cityEndMarker: any;
 
+    /**
+     * Fly to the given coordinates
+     * @param coords {Array<number>} - [lng, lat]
+     * @param type {"start" | "end"} - The type of the city
+     */
     export function flyTo(coords: [number, number], type: "start" | "end" = "start") {
         map.flyTo({center: coords, essential: true, speed: 2.5});
         if (type === "start") {
@@ -30,6 +35,11 @@
         drawRoad();
     }
 
+    /**
+     * Draw the road between the start and end cities,
+     * it will draws many lines between the cities, then we search for electric stations
+     * and set a marker
+     */
     async function drawRoad() {
         if ($cityStart === undefined || $cityEnd === undefined) return;
 
@@ -58,6 +68,10 @@
         });
     }
 
+    /**
+     * When the component is mounted, we create the map and subscribe to the cityStart and cityEnd stores
+     * to fly to the cities when they are set
+     */
     onMount(() => {
         mapUtils = new MapUtils("5mNoMIGOh5QaLuGhP3Ti");
         map = mapUtils.create(mapContainer)
