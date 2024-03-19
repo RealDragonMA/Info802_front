@@ -31,6 +31,8 @@
     }
 
     function calculateRoad() {
+        Soap.road($electric_stations, $road, $vehicle)
+
 
         const vehicleRangeMeters = $vehicle.range.chargetrip_range.best * 1000; // Converti en mètres
         const routeCoordinates = $road.road;
