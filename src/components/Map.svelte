@@ -7,9 +7,12 @@
     import MapUtils from "../utils/MapUtils";
     import cityStart from "../stores/cityStart";
     import cityEnd from "../stores/cityEnd";
-    import {setElectricStations} from "../stores/electric_stations";
-    import {setRoad} from "../stores/road";
+    import electric_stations, {setElectricStations} from "../stores/electric_stations";
+    import road, {setRoad} from "../stores/road";
     import selectedStations from "../stores/selectedStations";
+    import {setLoading} from "../stores/loading";
+    import vehicle from "../stores/vehicle";
+    import Soap from "../services/Soap";
 
     let mapUtils: MapUtils;
     export let map: any;
@@ -35,6 +38,45 @@
         drawRoad();
     }
 
+
+    export function calculateRoad() {
+        Soap.road($electric_stations, $road, $vehicle)
+
+
+        const vehicleRangeMeters = $vehicle.range.chargetrip_range.best * 1000; // Converti en mètres
+        const routeCoordinates = $road.road;
+
+        let remainingRange = vehicleRangeMeters;
+        const s = [];
+        let lastPosition = routeCoordinates[0];
+
+        for (const station of $electric_stations) {
+            const distance = calculateDistance(lastPosition, station);
+
+            if (distance > remainingRange) {
+                // Si la distance à la prochaine station est supérieure à l'autonomie restante,
+                // on s'arrête à la station précédente (si elle existe)
+                s.push(station);
+                remainingRange = vehicleRangeMeters - distance;
+                lastPosition = station;
+            } else {
+                // Sinon, on continue et on soustrait la distance parcourue à l'autonomie restante
+                remainingRange -= distance;
+                lastPosition = station;
+            }
+        }
+
+        selectedStations.set(s)
+
+    }
+
+    function calculateDistance(from: any, to: any): number {
+        // Approximation simple, considère chaque degré de latitude/longitude comme 111km
+        const latDistance = Math.abs(from[0] - to[0]) * 111000;
+        const lonDistance = Math.abs(from[1] - to[1]) * 111000;
+        return Math.sqrt(latDistance ** 2 + lonDistance ** 2);
+    }
+
     /**
      * Draw the road between the start and end cities,
      * it will draws many lines between the cities, then we search for electric stations
@@ -42,6 +84,8 @@
      */
     async function drawRoad() {
         if ($cityStart === undefined || $cityEnd === undefined) return;
+
+        setLoading(true)
 
         const start = $cityStart.geometry.coordinates;
         const end = $cityEnd.geometry.coordinates;
@@ -66,6 +110,8 @@
                 .setLngLat([lng, lat])
                 .addTo(map);
         });
+
+        setLoading(false)
     }
 
     /**
